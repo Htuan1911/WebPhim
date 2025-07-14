@@ -1,0 +1,36 @@
+@extends('layouts.admin')
+
+@section('content')
+    <h1>Thêm phòng chiếu</h1>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.cinema-rooms.store') }}" method="POST">
+        @csrf
+        <div class="mb-3">
+            <label>Tên phòng</label>
+            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+        </div>
+        <div class="mb-3">
+            <label>Số ghế</label>
+            <input type="number" name="total_seats" class="form-control" value="{{ old('total_seats') }}" required min="1">
+        </div>
+        <div class="mb-3">
+            <label>Rạp chiếu</label>
+            <select name="theater_id" class="form-select" required>
+                <option value="">-- Chọn rạp chiếu --</option>
+                @foreach ($theaters as $theater)
+                    <option value="{{ $theater->id }}" {{ old('theater_id') == $theater->id ? 'selected' : '' }}>
+                        {{ $theater->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Lưu</button>
+        <a href="{{ route('admin.cinema-rooms.index') }}" class="btn btn-secondary">Quay lại</a>
+    </form>
+@endsection

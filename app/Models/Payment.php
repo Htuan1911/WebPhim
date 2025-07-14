@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Payment extends Model
+{
+    protected $fillable = [
+        'order_id', 'user_id', 'amount', 'method', 'status', 'transaction_code', 'paid_at',
+    ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+}
