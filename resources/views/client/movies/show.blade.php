@@ -18,20 +18,6 @@
                             {{ \Carbon\Carbon::parse($movie->release_date)->format('d/m/Y') }}</p>
                         <p><strong>Mô tả:</strong></p>
                         <p>{{ $movie->description }}</p>
-
-                        {{-- <h5 class="mt-4">📅 Suất chiếu:</h5>
-                        @if ($movie->showtimes->isEmpty())
-                            <p>Chưa có suất chiếu.</p>
-                        @else
-                            <ul class="list-group">
-                                @foreach ($movie->showtimes as $showtime)
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Phòng: {{ $showtime->cinemaRoom->name ?? 'N/A' }}</span>
-                                        <span>{{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i d/m/Y') }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif --}}
                     </div>
                 </div>
 
@@ -52,7 +38,7 @@
                                 @endphp
                                 <button type="button"
                                     class="btn btn-sm d-flex flex-column align-items-center justify-content-center p-2 dateBtn
-                    {{ request('date') == $date ? 'btn-primary text-white' : 'btn-outline-primary' }}"
+                                    {{ request('date') == $date ? 'btn-primary text-white' : 'btn-outline-primary' }}"
                                     style="width: 60px; height: 60px;" data-date="{{ $date }}">
                                     <span style="font-size: 18px; font-weight: bold;">{{ $carbon->format('d') }}</span>
                                     <div style="width: 80%; border-top: 1px solid rgba(0,0,0,0.2); margin: 4px 0;"></div>
@@ -120,7 +106,8 @@
                                     @else
                                         <div class="d-flex flex-wrap gap-2">
                                             @foreach ($theaterShowtimes as $showtime)
-                                                <a href="{{ route('client.order.create', $showtime->id) }}" class="btn btn-outline-primary btn-sm">
+                                                <a href="{{ route('client.order.create', $showtime->id) }}"
+                                                    class="btn btn-outline-primary btn-sm">
                                                     {{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i') }}
                                                     - {{ $showtime->cinemaRoom->name ?? 'Phòng?' }}
                                                 </a>
@@ -153,42 +140,3 @@
         </div>
     </div>
 @endsection
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('filterForm');
-
-        // Các input ẩn giữ giá trị filter
-        const inputDate = document.getElementById('inputDate');
-        const inputCategory = document.getElementById('inputCategory');
-        const inputTheater = document.getElementById('inputTheater');
-
-        // Khi bấm nút chọn ngày
-        document.querySelectorAll('.dateBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                inputDate.value = this.dataset.date;
-                // Giữ nguyên category và theater
-                form.submit();
-            });
-        });
-
-        // Khi bấm nút chọn danh mục
-        document.querySelectorAll('.categoryBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                inputCategory.value = this.dataset.category;
-                // Reset theater vì thay đổi category
-                inputTheater.value = '';
-                form.submit();
-            });
-        });
-
-        // Khi bấm nút chọn rạp
-        document.querySelectorAll('.theaterBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                inputTheater.value = this.dataset.theater;
-                // Giữ nguyên date và category
-                form.submit();
-            });
-        });
-    });
-</script>

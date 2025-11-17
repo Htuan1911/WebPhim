@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CinemaRoomSeeder::class,
-            SeatSeeder::class,
+            RoomTemplateSeeder::class,
             ShowtimeSeeder::class,
         ]);
     }

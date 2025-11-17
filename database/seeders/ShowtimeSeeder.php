@@ -15,23 +15,34 @@ class ShowtimeSeeder extends Seeder
         $movies = Movie::pluck('id')->toArray();
         $cinemaRooms = CinemaRoom::with('theater')->get();
 
+        // Phân bổ giá theo khung giờ (đơn vị: đồng)
+        $priceByHour = [
+            8  => 45000, // 8h sáng → Rẻ nhất
+            11 => 45000, // 11h sáng → Rẻ
+            14 => 55000, // 2h chiều → Trung bình
+            17 => 65000, // 5h chiều → Đắt
+            20 => 65000, // 8h tối → Đắt nhất
+        ];
+
         foreach ($cinemaRooms as $room) {
-            // Duyệt qua 7 ngày tới (từ hôm nay)
+            // Duyệt 7 ngày tới
             for ($dayOffset = 0; $dayOffset < 7; $dayOffset++) {
                 $date = Carbon::now()->startOfDay()->addDays($dayOffset);
 
-                // Tạo 5 suất chiếu mỗi ngày: 8h, 11h, 14h, 17h, 20h
+                // 5 suất/ngày: 8h, 11h, 14h, 17h, 20h
                 $times = [8, 11, 14, 17, 20];
 
                 foreach ($times as $hour) {
+                    $startTime = $date->copy()->setTime($hour, 0);
+
                     Showtime::create([
-                        'movie_id' => $movies[array_rand($movies)],
-                        'theater_id' => $room->theater_id,
+                        'movie_id'       => $movies[array_rand($movies)],
+                        'theater_id'     => $room->theater_id,
                         'cinema_room_id' => $room->id,
-                        'start_time' => $date->copy()->addHours($hour),
-                        'ticket_price' => rand(70000, 120000),
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                        'start_time'     => $startTime,
+                        'ticket_price'   => $priceByHour[$hour], // Giá cố định theo giờ
+                        'created_at'     => now(),
+                        'updated_at'     => now(),
                     ]);
                 }
             }

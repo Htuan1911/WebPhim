@@ -1,327 +1,251 @@
 @extends('layouts.master')
 
 @section('content')
-    <style>
-        .seat {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            text-align: center;
-            line-height: 36px;
-            font-size: 13px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            user-select: none;
-        }
-
-        .seat.normal {
-            background-color: #fcd34d;
-        }
-
-        .seat.vip {
-            background-color: #f9a8d4;
-        }
-
-        .seat.booked {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .seat.selected {
-            background-color: #93c5fd !important;
-        }
-
-        .seat:hover:not(.booked):not(.selected) {
-            opacity: 0.8;
-        }
-
-        .screen {
-            width: 100%;
-            text-align: center;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-
-        .seat-label {
-            font-size: 14px;
-            width: 30px;
-            text-align: center;
-        }
-
-        .combo-item {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background-color: #f8f9fa;
-        }
-
-        .combo-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .combo-info {
-            flex-grow: 1;
-        }
-
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .quantity-control button {
-            padding: 2px 8px;
-            border: 1px solid #ccc;
-            background-color: #e2e8f0;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .quantity-control input {
-            width: 40px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-    </style>
-
-    <div class="container py-5">
-        {{-- STEP 1: CHỌN GHẾ --}}
-        <div id="step-1">
-            <h4>01 CHỌN GHẾ</h4>
-            <div class="screen">MÀN HÌNH</div>
-
-            <div class="d-flex flex-column align-items-center gap-2">
-                @php
-                    $groupedSeats = $seats->groupBy(fn($item) => substr($item->seat_number, 0, 1));
-                @endphp
-
-                @foreach ($groupedSeats as $row => $seatsInRow)
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="seat-label">{{ $row }}</div>
-                        <div class="d-flex gap-2">
-                            @foreach ($seatsInRow->sortBy(fn($seat) => (int) filter_var($seat->seat_number, FILTER_SANITIZE_NUMBER_INT)) as $seat)
-                                @php
-                                    $isBooked = in_array($seat->id, $bookedSeatIds);
-                                    $class = $seat->seat_type === 'vip' ? 'vip' : 'normal';
-                                    if ($isBooked) {
-                                        $class = 'booked';
-                                    }
-                                    $basePrice = $showtime->ticket_price;
-                                    $seatPrice = $seat->seat_type === 'vip' ? $basePrice + 25000 : $basePrice;
-                                @endphp
-                                <div class="seat {{ $class }}" data-id="{{ $seat->id }}"
-                                    data-price="{{ $seatPrice }}">
-                                    {{ $seat->seat_number }}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="mt-4 d-flex flex-wrap gap-4 align-items-center">
-                <div>🎫 Ghế thường: <span class="seat normal sample">A1</span></div>
-                <div>💺 Ghế VIP: <span class="seat vip sample">A1</span></div>
-                <div>❌ Đã đặt: <span class="seat booked sample">A1</span></div>
-                <div>✅ Đang chọn: <span class="seat selected sample">A1</span></div>
-            </div>
-
-            <button class="btn btn-primary mt-4" id="to-step-2">Tiếp tục chọn combo</button>
-        </div>
-
-        {{-- STEP 2: CHỌN COMBO --}}
-        <div id="step-2" style="display: none;">
-            <h4>02 CHỌN BỎNG NƯỚC</h4>
-            <form id="comboForm">
-                @foreach ($combos as $combo)
-                    <div class="combo-item">
-                        <img src="{{ asset('storage/' . $combo->image) }}" alt="{{ $combo->name }}">
-                        <div class="combo-info">
-                            <strong>{{ $combo->name }}</strong><br>
-                            <small>{{ number_format($combo->price) }} đ</small>
-                        </div>
-                        <div class="quantity-control">
-                            <button type="button" class="btn-minus" data-id="{{ $combo->id }}">−</button>
-                            <input type="text" class="combo-quantity" value="0" readonly
-                                data-id="{{ $combo->id }}">
-                            <button type="button" class="btn-plus" data-id="{{ $combo->id }}">+</button>
-                        </div>
-                    </div>
-                @endforeach
-            </form>
-            <button class="btn btn-secondary mt-3" id="back-to-step-1">⬅ Quay lại chọn ghế</button>
-            <button class="btn btn-primary mt-3" id="to-step-3">Tiếp tục thanh toán</button>
-        </div>
-
-        {{-- STEP 3: THANH TOÁN --}}
-        <div id="step-3" style="display: none;">
-            <h4>03 XÁC NHẬN THANH TOÁN</h4>
-            <p><strong>Phim:</strong> {{ $showtime->movie->title }}</p>
-            <p><strong>Ghế đã chọn:</strong> <span id="summary-seats"></span></p>
-            <p><strong>Combo:</strong> <span id="summary-combos"></span></p>
-            <p><strong>Tổng tiền:</strong> <span id="summary-total">0 đ</span></p>
-            <button class="btn btn-secondary mt-3" id="back-to-step-2">⬅ Quay lại chọn combo</button>
-            <form action="{{ route('client.order.momo_payment') }}" method="POST" id="final-order-form">
-                @csrf
-                <input type="hidden" name="summary-total" id="summary-total-input" value="0">
-                <input type="hidden" name="showtime_id" value="{{ $showtime->id }}">
-                <!-- Nơi để JS thêm các input ẩn seats[] và combos[] -->
-                <div id="selected-seats-inputs"></div>
-                <div id="selected-combos-inputs"></div>
-
-                <button type="submit" class="btn btn-success mt-3">Đặt vé</button>
-            </form>
-
+    <div class="container py-5 d-none d-md-block">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">{{ $showtime->movie->title }}</h2>
+            <p class="text-muted">
+                {{ $showtime->cinemaRoom->theater->name }} •
+                {{ $showtime->cinemaRoom->name }} •
+                {{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i d/m/Y') }}
+            </p>
         </div>
     </div>
 
-    <script>
-        const selectedSeats = new Set();
+    {{-- ====================== MODAL 1 – CHỌN GHẾ ====================== --}}
+    <div class="modal fade" id="step1Modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">01 CHỌN GHẾ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="screen">MÀN HÌNH</div>
 
-        document.querySelectorAll('.seat').forEach(seat => {
-            if (!seat.classList.contains('booked') && !seat.classList.contains('sample')) {
-                seat.addEventListener('click', function() {
-                    const seatId = this.dataset.id;
-                    const price = parseInt(this.dataset.price);
+                    <div class="d-flex flex-column align-items-center gap-2 mt-4">
+                        @php
+                            $groupedSeats = $seats->groupBy(fn($item) => substr($item->seat_number, 0, 1));
+                        @endphp
 
-                    if (this.classList.contains('selected')) {
-                        this.classList.remove('selected');
-                        selectedSeats.delete(seatId);
-                    } else {
-                        this.classList.add('selected');
-                        selectedSeats.add(seatId);
-                    }
-                });
-            }
-        });
+                        @foreach ($groupedSeats as $row => $seatsInRow)
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="seat-label">{{ $row }}</div>
+                                <div class="d-flex gap-2">
+                                    @foreach ($seatsInRow->sortBy(fn($seat) => (int) filter_var($seat->seat_number, FILTER_SANITIZE_NUMBER_INT)) as $seat)
+                                        @php
+                                            $isBooked = in_array($seat->id, $bookedSeatIds);
+                                            $class = $seat->seat_type === 'vip' ? 'vip' : 'normal';
+                                            if ($isBooked) {
+                                                $class = 'booked';
+                                            }
+                                            $basePrice = $showtime->ticket_price;
+                                            $seatPrice = $seat->seat_type === 'vip' ? $basePrice + 25000 : $basePrice;
+                                        @endphp
+                                        <div class="seat {{ $class }}" data-id="{{ $seat->id }}"
+                                            data-price="{{ $seatPrice }}">
+                                            {{ $seat->seat_number }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
 
-        document.getElementById('to-step-2').addEventListener('click', () => {
-            if (selectedSeats.size === 0) {
-                alert('Vui lòng chọn ít nhất một ghế!');
-                return;
-            }
-            document.getElementById('step-1').style.display = 'none';
-            document.getElementById('step-2').style.display = 'block';
-        });
+                    <div class="mt-4 d-flex flex-wrap gap-4 align-items-center justify-content-center">
+                        <div>Ghế thường: <span class="seat normal sample">A1</span></div>
+                        <div>Ghế VIP: <span class="seat vip sample">A1</span></div>
+                        <div>Đã đặt: <span class="seat booked sample">A1</span></div>
+                    </div>
+                </div>
 
-        document.getElementById('back-to-step-1').addEventListener('click', () => {
-            document.getElementById('step-2').style.display = 'none';
-            document.getElementById('step-1').style.display = 'block';
-        });
+                <div class="mt-4 p-4 bg-light rounded shadow-sm border">
+                    <h5 class="text-primary mb-3 fw-bold">Tạm tính</h5>
 
-        document.getElementById('to-step-3').addEventListener('click', () => {
-            // Lấy tên ghế đã chọn
-            const selectedNames = [...document.querySelectorAll('.seat.selected:not(.sample)')]
-                .map(s => s.innerText)
-                .join(', ');
-            document.getElementById('summary-seats').innerText = selectedNames || 'Chưa chọn';
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="fw-medium">Ghế đã chọn:</span>
+                            <strong id="temp-seat-list" class="text-primary text-end">
+                                Chưa chọn ghế
+                            </strong>
+                        </div>
+                    </div>
 
-            let comboSummary = '';
-            let total = 0;
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tiền vé:</span>
+                        <strong id="temp-ticket-price" class="text-danger">0 đ</strong>
+                    </div>
 
-            // Tính tổng tiền ghế
-            const selectedSeats = document.querySelectorAll('.seat.selected:not(.sample)');
-            selectedSeats.forEach(s => {
-                const price = parseInt(s.dataset.price) || 0; // Fallback to 0 if price is NaN
-                total += price;
-            });
+                    <hr class="my-3">
 
-            // Tính tổng tiền combo
-            document.querySelectorAll('.combo-item').forEach(item => {
-                const name = item.querySelector('.combo-info strong').innerText;
-                const priceText = item.querySelector('.combo-info small').innerText.replace(/[^\d]/g, '');
-                const price = parseInt(priceText) || 0; // Fallback to 0 if price is NaN
-                const input = item.querySelector('input');
-                const quantity = parseInt(input.value) || 0; // Fallback to 0 if quantity is NaN
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Tổng cộng:</span>
+                        <span id="temp-total-price" class="text-danger">0 đ</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" id="cancel-booking-btn">
+                        Hủy đặt vé
+                    </button>
+                    <button type="button" class="btn btn-primary" id="to-step-2">
+                        Tiếp tục chọn combo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                if (quantity > 0) {
-                    comboSummary +=
-                        `- ${name} x ${quantity} (${new Intl.NumberFormat().format(price * quantity)} đ)<br>`;
-                    total += price * quantity;
-                }
-            });
+    {{-- ====================== MODAL 2 – CHỌN COMBO ====================== --}}
+    <div class="modal fade" id="step2Modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">02 CHỌN BỎNG NƯỚC</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="comboForm">
+                        @foreach ($combos as $combo)
+                            <div
+                                class="combo-item d-flex align-items-center justify-content-between p-3 border rounded mb-3">
+                                <img src="{{ asset('storage/' . $combo->image) }}" alt="{{ $combo->name }}"
+                                    style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+                                <div class="combo-info flex-grow-1 ms-3">
+                                    <strong>{{ $combo->name }}</strong><br>
+                                    <small class="text-danger fw-bold">{{ number_format($combo->price) }} đ</small>
+                                </div>
+                                <div class="quantity-control d-flex align-items-center">
+                                    <button type="button" class="btn btn-outline-danger btn-minus"
+                                        data-id="{{ $combo->id }}">−</button>
+                                    <input type="text" class="combo-quantity text-center mx-2" style="width:50px;"
+                                        value="0" readonly data-id="{{ $combo->id }}"
+                                        data-price="{{ $combo->price }}">
+                                    <button type="button" class="btn btn-outline-danger btn-plus"
+                                        data-id="{{ $combo->id }}">+</button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </form>
+                </div>
 
-            // Cập nhật tổng tiền
-            document.getElementById('summary-combos').innerHTML = comboSummary || 'Không chọn';
-            document.getElementById('summary-total').innerText = new Intl.NumberFormat().format(total) + ' đ';
-            document.getElementById('summary-total-input').value = total;
+                <div class="mt-5 p-4 bg-light rounded shadow">
+                    <h5 class="text-warning mb-3">Tạm tính đơn hàng</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Vé phim ({{ $showtime->movie->title }})</span>
+                        <strong id="combo-temp-ticket">0 đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Combo & Bỏng nước</span>
+                        <strong id="combo-temp-price">0 đ</strong>
+                    </div>
+                    <hr class="my-3">
+                    <div class="d-flex justify-content-between fw-bold fs-4">
+                        <span>Tổng thanh toán:</span>
+                        <span id="combo-temp-total" class="text-danger">0 đ</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-target="#step1Modal" data-bs-toggle="modal">
+                        Quay lại chọn ghế
+                    </button>
+                    <button type="button" class="btn btn-primary" id="to-step-3">
+                        Tiếp tục thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            // Chuyển sang bước thanh toán
-            document.getElementById('step-2').style.display = 'none';
-            document.getElementById('step-3').style.display = 'block';
-        });
+    {{-- ====================== MODAL 3 – XÁC NHẬN THANH TOÁN (FULL NỘI DUNG) ====================== --}}
+    <div class="modal fade" id="step3Modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-ticket-perforated me-2"></i>
+                        XÁC NHẬN & THANH TOÁN
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
 
-        document.getElementById('back-to-step-2').addEventListener('click', () => {
-            document.getElementById('step-3').style.display = 'none';
-            document.getElementById('step-2').style.display = 'block';
-        });
+                <div class="modal-body p-4 p-lg-5">
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold text-danger">{{ $showtime->movie->title }}</h3>
+                    </div>
 
-        // Nút tăng giảm combo
-        document.querySelectorAll('.btn-minus').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const input = this.parentElement.querySelector('input');
-                let current = parseInt(input.value);
-                if (current > 0) input.value = current - 1;
-            });
-        });
+                    <div class="row g-4 mb-4 text-muted">
+                        <div class="col-sm-6">
+                            <div class="fw-medium">Thời gian</div>
+                            <div class="fw-bold fs-5">
+                                {{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i') }} -
+                                {{ \Carbon\Carbon::parse($showtime->end_time)->format('H:i') }}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="fw-medium">Ngày chiếu</div>
+                            <div class="fw-bold fs-5">
+                                {{ \Carbon\Carbon::parse($showtime->start_time)->format('d/m/Y') }}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="fw-medium">Rạp</div>
+                            <div class="fw-bold">{{ $showtime->cinemaRoom->theater->name }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="fw-medium">Phòng chiếu</div>
+                            <div class="fw-bold text-primary fs-5">{{ $showtime->cinemaRoom->name }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="fw-medium">Định dạng</div>
+                            <div class="fw-bold">2D Phụ đề</div>
+                        </div>
+                    </div>
 
-        document.querySelectorAll('.btn-plus').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const input = this.parentElement.querySelector('input');
-                let current = parseInt(input.value);
-                input.value = current + 1;
-            });
-        });
+                    <hr class="border-secondary">
 
-        document.getElementById('final-order-form').addEventListener('submit', function(e) {
-            const seatsInputWrapper = document.getElementById('selected-seats-inputs');
-            const combosInputWrapper = document.getElementById('selected-combos-inputs');
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-dark mb-3">Ghế đã chọn</h5>
+                        <div class="fs-4 fw-bold text-danger" id="summary-seats">
+                        </div>
+                    </div>
 
-            // Xóa input cũ nếu có
-            seatsInputWrapper.innerHTML = '';
-            combosInputWrapper.innerHTML = '';
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-dark mb-3">Combo & Bỏng nước</h5>
+                        <div id="summary-combos" class="text-dark">
+                        </div>
+                    </div>
 
-            // ✅ Gửi ghế đã chọn
-            document.querySelectorAll('.seat.selected:not(.sample)').forEach(seat => {
-                const seatId = seat.dataset.id;
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'seats[]';
-                input.value = seatId;
-                seatsInputWrapper.appendChild(input);
-            });
+                    <div class="pt-4 border-top border-3 border-danger">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="fw-bold mb-0">Tổng thanh toán</h4>
+                            <h2 class="text-danger fw-bold mb-0">
+                                <span id="summary-total">0 đ</span>
+                            </h2>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Ưu đãi (nếu có) sẽ được áp dụng ở bước thanh toán cuối cùng.
+                        </small>
+                    </div>
+                </div>
 
-            // ✅ Gửi combo đã chọn
-            let comboIndex = 0;
-            document.querySelectorAll('.combo-item').forEach(item => {
-                const comboId = item.querySelector('.btn-minus')?.dataset.id;
-                const quantity = item.querySelector('input')?.value;
+                <div class="modal-footer border-0 bg-light justify-content-between px-4 py-4">
+                    <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-target="#step2Modal"
+                        data-bs-toggle="modal">
+                        Quay lại chọn combo
+                    </button>
 
-                if (comboId && parseInt(quantity) > 0) {
-                    const inputId = document.createElement('input');
-                    inputId.type = 'hidden';
-                    inputId.name = `combos[${comboIndex}][id]`;
-                    inputId.value = comboId;
+                    <form action="{{ route('client.order.momo_payment') }}" method="POST" id="final-order-form">
+                        @csrf
+                        <input type="hidden" name="summary-total" id="summary-total-input" value="0">
+                        <input type="hidden" name="showtime_id" value="{{ $showtime->id }}">
+                        <div id="selected-seats-inputs"></div>
+                        <div id="selected-combos-inputs"></div>
 
-                    const inputQty = document.createElement('input');
-                    inputQty.type = 'hidden';
-                    inputQty.name = `combos[${comboIndex}][quantity]`;
-                    inputQty.value = quantity;
-
-                    combosInputWrapper.appendChild(inputId);
-                    combosInputWrapper.appendChild(inputQty);
-
-                    comboIndex++;
-                }
-            });
-        });
-    </script>
+                        <button type="submit" class="btn btn-danger btn-lg px-5 fw-bold">
+                            Đặt vé ngay
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
