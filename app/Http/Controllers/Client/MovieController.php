@@ -10,37 +10,49 @@ use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
-
-    // Hiển thị danh sách tất cả các phim
     public function index(Request $request)
     {
         $query = Movie::query();
 
-        // Tùy chọn lọc theo tên phim nếu có từ khóa tìm kiếm
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where('title', 'like', '%' . $search . '%');
+        if ($search = $request->get('search')) {
+            $query->where('title', 'like', "%{$search}%");
         }
 
-        // Lấy danh sách phim, phân trang 12 phim mỗi trang
-        $movies = $query->latest()->paginate(12);
+        if ($genre = $request->get('genre')) {
+            $query->where(function ($q) use ($genre) {
+                $q->where('genre', 'like', "%{$genre}%")
+                    ->orWhere('genre', 'like', "%\"{$genre}\"%")
+                    ->orWhere('genre', 'like', "%|{$genre}|%")
+                    ->orWhere('genre', 'like', "%,{$genre},%");
+            });
+        }
 
-        return view('client.movies.index', compact('movies'));
+        if ($year = $request->get('year')) {
+            $query->whereYear('release_date', $year);
+        }
+
+        $movies = $query->latest('release_date')->paginate(20)->withQueryString();
+
+        $nowShowingMovies = Movie::where('status', Movie::STATUS_NOW_SHOWING)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        $comingSoonMovies = Movie::where('status', Movie::STATUS_COMING_SOON)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('client.movies.index', compact('movies', 'nowShowingMovies', 'comingSoonMovies'));
     }
 
     public function show($id, Request $request)
     {
         $movie = Movie::with(['showtimes.cinemaRoom.theater'])->findOrFail($id);
-
         $theaters = Theater::all();
-
-        // Lấy ngày được chọn (nếu không có thì lấy ngày hôm nay)
         $selectedDate = $request->query('date', now()->format('Y-m-d'));
-
-        // Lấy rạp được chọn (mặc định all)
         $selectedTheaterId = $request->query('theater_id', 'all');
 
-        // Lọc showtimes theo ngày và rạp
         $showtimes = $movie->showtimes()
             ->whereDate('start_time', $selectedDate)
             ->when($selectedTheaterId !== 'all', function ($query) use ($selectedTheaterId) {
@@ -50,13 +62,11 @@ class MovieController extends Controller
             })
             ->get();
 
-        // Tạo danh sách các ngày trong tuần (ví dụ 7 ngày từ hôm nay)
         $weekDates = collect();
-        for ($i = 0; $i < 7; $i++) {
+        for ($i = 0; $i < 9; $i++) {
             $weekDates->push(now()->addDays($i)->format('Y-m-d'));
         }
 
-        // Lấy danh sách phim đang chiếu (ví dụ lấy 8 phim gần đây, hoặc có thể thêm điều kiện phù hợp)
         $nowShowingMovies = Movie::where('release_date', '<=', now())
             ->orderByDesc('release_date')
             ->take(12)

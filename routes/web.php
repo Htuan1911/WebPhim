@@ -15,7 +15,9 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\TheaterController as ClientTheaterController;
 use App\Http\Controllers\Client\MovieController as ClientMovieController;
-
+use App\Http\Controllers\ReviewController as ClientReviewController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -93,6 +95,21 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
         Route::get('/show/{id}', [OrderController::class, 'show'])->name('show');
         Route::delete('/{id}/destroy', [OrderController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('posts')->name('posts.')->group(function () {
+        Route::get('/',                     [PostController::class, 'index'])->name('index');
+        Route::get('/create',               [PostController::class, 'create'])->name('create');
+        Route::post('/store',               [PostController::class, 'store'])->name('store');
+        Route::get('/{id}/edit',            [PostController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update',          [PostController::class, 'update'])->name('update');
+        Route::delete('/{id}/destroy',      [PostController::class, 'destroy'])->name('destroy');
+    });
+
+    // Route quản lý đánh giá
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/',                     [ReviewController::class, 'index'])->name('index');
+        Route::delete('/{id}/destroy',      [ReviewController::class, 'destroy'])->name('destroy');
+    });
 });
 
 
@@ -116,4 +133,12 @@ Route::prefix('client')->name('client.')->group(function () {
 
     Route::get('/rap-chieu', [ClientTheaterController::class, 'index'])->name('theaters.index');
     Route::get('/rap-chieu/{id}', [ClientTheaterController::class, 'show'])->name('theaters.show');
+
+    Route::post('/orders/{order}/reviews', [\App\Http\Controllers\Client\ReviewController::class, 'store'])
+        ->name('reviews.store')
+        ->middleware('auth');
+
+    // Trang xem tất cả đánh giá của 1 phim
+    Route::get('/movies/{movie}/reviews', [\App\Http\Controllers\Client\ReviewController::class, 'list'])
+        ->name('reviews.list');;
 });

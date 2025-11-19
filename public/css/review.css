@@ -1,0 +1,290 @@
+/* public/css/review-history.css */
+:root {
+    --pink: #ff1493;
+    --hotpink: #ff69b4;
+    --gold: #ffd700;
+}
+
+/* Màu chữ hồng */
+.text-pink {
+    color: var(--hotpink);
+}
+
+/* Form đánh giá */
+.review-form {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #444;
+    margin-top: 20px;
+    backdrop-filter: blur(8px);
+}
+
+/* Chọn sao – đẹp lung linh */
+.star-rating {
+    display: inline-block;
+    font-size: 42px;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    user-select: none;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    color: #555;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 0 2px;
+}
+
+.star-rating label:hover,
+.star-rating label:hover~label,
+.star-rating input:checked~label {
+    color: var(--gold) !important;
+    text-shadow: 0 0 15px #ff0;
+    transform: scale(1.1);
+}
+
+/* Hiển thị sao đã đánh giá */
+.star-display {
+    font-size: 28px;
+    display: inline-block;
+}
+
+.star-display .filled {
+    color: var(--gold);
+    text-shadow: 0 0 8px #ff0;
+}
+
+.star-display .empty {
+    color: #555;
+}
+
+/* Nút gửi */
+.btn-submit-review {
+    background: linear-gradient(45deg, var(--pink), var(--hotpink));
+    color: white;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-submit-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 20, 147, 0.4);
+}
+
+.btn-outline-pink {
+    border: 2px solid var(--hotpink);
+    color: var(--hotpink);
+    background: transparent;
+    transition: all 0.3s;
+}
+
+.btn-outline-pink:hover {
+    background: var(--hotpink);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+}
+
+/* =============== */
+/* ========== TÔNG MÀU ========== */
+:root {
+    --pink: #ff4d94;
+    --yellow: #ffd700;
+    --gray: #aaa;
+    --white: #f1f1f1;
+}
+
+/* Toàn bộ trang */
+.movie-detail {
+    margin: auto;
+    padding: 40px 20px;
+    color: var(--white);
+    font-family: "Inter", sans-serif;
+    background-color: black;
+}
+
+/* ========== HEADER ========== */
+.header-section {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.poster-rewview img {
+    width: 230px;
+    border-radius: 12px;
+}
+
+.info-section {
+    flex: 1;
+}
+
+/* Tiêu đề */
+.title-review {
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Sub title */
+.header-section h4 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* ========== PHẦN THÔNG TIN PHIM ========== */
+
+/* ========================= GRID LAYOUT ========================= */
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+/* LEFT COLUMN */
+.movie-left {
+    text-align: left;
+}
+
+.movie-poster {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.movie-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.movie-genre {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.movie-release span {
+    font-weight: bold;
+    color: var(--pink);
+}
+
+/* Button */
+.btn-book-ticket {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 25px;
+    border-radius: 30px;
+    background: var(--pink);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.25s;
+}
+
+.btn-book-ticket:hover {
+    opacity: 0.8;
+}
+
+
+.review-title {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.review-subtitle {
+    margin-top: 18px;
+    font-size: 18px;
+}
+
+/* Review List */
+.reviews-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.review-item {
+    padding: 18px 22px;
+    border-bottom: 1px solid #333;
+}
+
+/* Layout: avatar + name + time */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.review-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.review-username {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.review-time {
+    font-size: 13px;
+}
+
+/* Verified badge */
+.verified-badge {
+    background: rgba(255, 0, 255, 0.15);
+    color: #ff4d94;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Rating */
+.review-rating {
+    margin-top: 8px;
+    color: #ffd700;
+    font-size: 18px;
+}
+
+.rating-number {
+    margin-left: 8px;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Comment */
+.review-comment {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* ========================= RESPONSIVE ========================= */
+
+@media (max-width: 768px) {
+    .movie-grid {
+        grid-template-columns: 1fr;
+    }
+}

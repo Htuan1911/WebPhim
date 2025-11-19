@@ -228,21 +228,20 @@ class OrderController extends Controller
     public function history()
     {
         if (auth()->check()) {
-            // Lấy đơn theo user_id nếu đã đăng nhập
+            // Người đăng nhập: lấy theo user_id
             $orders = Order::with(['showtime.movie', 'orderSeats.seat'])
                 ->where('user_id', auth()->id())
                 ->latest()
-                ->get();
+                ->paginate(10);
         } else {
-            // Nếu là khách, lấy danh sách booking_code đã lưu trong session
+            // Khách vãng lai: lấy từ session
             $bookingCodes = session('guest_orders', []);
 
             $orders = Order::with(['showtime.movie', 'orderSeats.seat'])
                 ->whereIn('booking_code', $bookingCodes)
                 ->latest()
-                ->get();
+                ->paginate(10);
         }
-
         return view('client.orders.history', compact('orders'));
     }
 }

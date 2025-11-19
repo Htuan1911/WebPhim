@@ -41,4 +41,9 @@ class Order extends Model
     {
         return $this->belongsToMany(Seat::class, 'order_seats');
     }
+
+    public function movie()
+    {
+        return $this->hasOneThrough(Movie::class, Showtime::class, 'id', 'id', 'showtime_id', 'movie_id');
+    }
 }

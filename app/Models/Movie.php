@@ -16,12 +16,21 @@ class Movie extends Model
         'genre',
         'duration',
         'poster',
+        'banner',
+        'trailer',
+        'age_rating',
         'release_date',
-        'status',
+        'status'
     ];
+
 
     public function showtimes()
     {
         return $this->hasMany(Showtime::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
     }
 }

@@ -34,3 +34,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+function toggleDescription() {
+    const el = document.getElementById('descriptionText');
+    const toggle = document.querySelector('.description-toggle');
+    el.classList.toggle('expanded');
+    toggle.textContent = el.classList.contains('expanded') ? 'Thu gọn' : '...Xem thêm';
+}

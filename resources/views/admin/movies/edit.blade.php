@@ -19,48 +19,69 @@
 
         <div class="mb-3">
             <label>Tiêu đề</label>
-            <input type="text" name="title" class="form-control" value="{{ old('title', $movie->title) }}" required>
+            <input type="text" name="title" class="form-control" value="{{ $movie->title }}" required>
         </div>
+
         <div class="mb-3">
             <label>Mô tả</label>
-            <textarea name="description" class="form-control">{{ old('description', $movie->description) }}</textarea>
+            <textarea name="description" class="form-control">{{ $movie->description }}</textarea>
         </div>
+
         <div class="mb-3">
             <label>Thể loại</label>
-            <input type="text" name="genre" class="form-control" value="{{ old('genre', $movie->genre) }}">
+            <input type="text" name="genre" class="form-control" value="{{ $movie->genre }}">
         </div>
+
+        <div class="mb-3">
+            <label>Độ tuổi</label>
+            <input type="text" name="age_rating" class="form-control" value="{{ $movie->age_rating }}">
+        </div>
+
         <div class="mb-3">
             <label>Thời lượng (phút)</label>
-            <input type="number" name="duration" class="form-control" value="{{ old('duration', $movie->duration) }}">
+            <input type="number" name="duration" class="form-control" value="{{ $movie->duration }}">
         </div>
+
         <div class="mb-3">
             <label>Ngày phát hành</label>
-            <input type="date" name="release_date" class="form-control"
-                value="{{ old('release_date', $movie->release_date) }}">
+            <input type="date" name="release_date" class="form-control" value="{{ $movie->release_date }}">
         </div>
+
+        <div class="mb-3">
+            <label>Link trailer</label>
+            <input type="text" name="trailer" class="form-control" value="{{ $movie->trailer }}">
+        </div>
+
         <div class="mb-3">
             <label>Poster</label>
             <input type="file" name="poster" class="form-control">
             @if ($movie->poster)
                 <div class="mt-2">
-                    <img src="{{ asset('storage/posters/' . $movie->poster) }}" alt="Poster" width="100">
+                    <img src="{{ asset('storage/' . $movie->poster) }}" width="100">
                 </div>
             @endif
         </div>
+
         <div class="mb-3">
-            <label for="status">Trạng thái</label>
-            <select name="status" class="form-control" required>
-                <option value="now_showing" {{ old('status', $movie->status ?? '') == 'now_showing' ? 'selected' : '' }}>
-                    Đang chiếu</option>
-                <option value="coming_soon" {{ old('status', $movie->status ?? '') == 'coming_soon' ? 'selected' : '' }}>Sắp
-                    chiếu</option>
-                <option value="ended" {{ old('status', $movie->status ?? '') == 'ended' ? 'selected' : '' }}>Ngừng chiếu
-                </option>
+            <label>Banner</label>
+            <input type="file" name="banner" class="form-control">
+            @if ($movie->banner)
+                <div class="mt-2">
+                    <img src="{{ asset('storage/' . $movie->banner) }}" width="150">
+                </div>
+            @endif
+        </div>
+
+        <div class="mb-3">
+            <label>Trạng thái</label>
+            <select name="status" class="form-control">
+                <option value="now_showing"  {{ $movie->status == 'now_showing' ? 'selected' : '' }}>Đang chiếu</option>
+                <option value="coming_soon" {{ $movie->status == 'coming_soon' ? 'selected' : '' }}>Sắp chiếu</option>
+                <option value="ended"       {{ $movie->status == 'ended' ? 'selected' : '' }}>Ngừng chiếu</option>
             </select>
         </div>
 
-
-        <button type="submit" class="btn btn-success">Lưu</button>
+        <button class="btn btn-success">Cập nhật</button>
         <a href="{{ route('admin.movies.index') }}" class="btn btn-secondary">Quay lại</a>
     </form>
 @endsection
