@@ -14,6 +14,12 @@
         </li>
 
         <li>
+            <a href="{{ route('admin.cinema-categories.index') }}" class="nav-link text-white">
+                <i class="fas fa-film me-2"></i> Quản lý danh mục Rạp
+            </a>
+        </li>
+
+        <li>
             <a href="{{ route('admin.theaters.index') }}" class="nav-link text-white">
                 <i class="fas fa-building me-2"></i> Quản lý rạp chiếu
             </a>

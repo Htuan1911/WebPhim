@@ -93,48 +93,68 @@
 
                     {{-- Chọn danh mục rạp --}}
                     <div class="mb-3">
-                        <strong class="filter-label">Chọn danh mục rạp:</strong>
-                        <div class="d-flex flex-wrap gap-3 mt-2">
-                            <button type="button" class="categoryBtn {{ !request('category') ? 'active' : '' }}"
-                                data-category="">
-                                Tất cả
+                        <strong class="filter-label d-block mb-3 fs-5 text-primary">
+                            Chọn hãng rạp:
+                        </strong>
+
+                        <div class="d-flex flex-wrap gap-3 justify-content-start">
+                            <!-- Nút "Tất cả" – màu hồng giống ảnh -->
+                            <button type="button"
+                                class="categoryBtn cinema-brand-btn {{ !request('category_id') || request('category_id') === 'all' ? 'active' : '' }}"
+                                data-category-id="all">
+                                <div class="position-relative mb-1">
+                                    <svg width="30" height="30" viewBox="0 0 38 38" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19 2L23.5 14.5H36L26 21.5L29.5 34L19 27L8.5 34L12 21.5L2 14.5H14.5L19 2Z"
+                                            fill="#f5c518" stroke="#f5c518" stroke-width="3" />
+                                    </svg>
+                                </div>
+                                <span class="brand-name fw-bold">Tất cả</span>
                             </button>
-                            @foreach ($theaters->pluck('category')->unique() as $category)
+
+                            <!-- Các hãng rạp -->
+                            @foreach (\App\Models\CinemaCategory::where('is_active', true)->orderBy('priority', 'desc')->orderBy('name')->get() as $cat)
                                 <button type="button"
-                                    class="categoryBtn {{ request('category') == $category ? 'active' : '' }}"
-                                    data-category="{{ $category }}">
-                                    {{ $category ?? 'Chưa có danh mục' }}
+                                    class="categoryBtn cinema-brand-btn {{ request('category_id') == $cat->id ? 'active' : '' }}"
+                                    data-category-id="{{ $cat->id }}" title="{{ $cat->name }}">
+
+                                    <div class="brand-icon-wrapper">
+                                        @if ($cat->image)
+                                            <img src="{{ asset('storage/' . $cat->image) }}" alt="{{ $cat->name }}"
+                                                class="brand-logo">
+                                        @else
+                                            <i class="fas fa-film fa-2x text-secondary"></i>
+                                        @endif
+                                    </div>
+
+                                    <span class="brand-name">{{ $cat->name }}</span>
                                 </button>
                             @endforeach
                         </div>
                     </div>
 
                     {{-- Danh sách rạp --}}
+                    {{-- Danh sách rạp có suất chiếu --}}
                     <div class="mb-3">
                         <strong class="filter-label">Chọn rạp:</strong>
                         <div class="d-flex flex-column gap-3 mt-3">
-                            @php
-                                $filteredTheaters = request('category')
-                                    ? $theaters->where('category', request('category'))
-                                    : $theaters;
-                            @endphp
 
-                            @foreach ($filteredTheaters as $theater)
+                            @forelse($groupedShowtimes as $theaterId => $showtimesGroup)
                                 @php
-                                    $theaterShowtimes = $showtimes
-                                        ->filter(fn($s) => $s->cinemaRoom->theater_id == $theater->id)
-                                        ->sortBy('start_time');
+                                    $theater = $showtimesGroup->first()->cinemaRoom->theater;
                                 @endphp
 
                                 <div class="theater-collapse-card">
                                     <div class="theater-collapse-header" data-bs-toggle="collapse"
                                         data-bs-target="#showtimes-{{ $theater->id }}" aria-expanded="false">
                                         <div class="d-flex align-items-center gap-3 flex-grow-1">
-                                            <img src="{{ asset('storage/' . $theater->image) }}"
-                                                alt="{{ $theater->name }}" class="theater-img">
+                                            <img src="{{ $theater->image ? asset('storage/' . $theater->image) : asset('images/default-theater.jpg') }}"
+                                                alt="{{ $theater->name }}" class="theater-img rounded"
+                                                style="width:60px;height:60px;object-fit:cover;">
                                             <div>
-                                                <strong class="theater-name">{{ $theater->name }}</strong><br>
-                                                <small class="text-muted">{{ $theater->address }}</small>
+                                                <strong class="theater-name">{{ $theater->name }}</strong>
+                                                @if ($theater->cinemaCategory)
+                                                @endif
                                             </div>
                                         </div>
                                         <span class="collapse-arrow">
@@ -143,27 +163,27 @@
                                     </div>
 
                                     <div class="collapse" id="showtimes-{{ $theater->id }}">
-                                        <div class="theater-showtimes-body">
-                                            @if ($theaterShowtimes->isEmpty())
-                                                <p class="text-muted mb-0 py-3 text-center">
-                                                    Không có suất chiếu trong ngày này
-                                                </p>
-                                            @else
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    @foreach ($theaterShowtimes as $showtime)
-                                                        <a href="{{ route('client.order.create', $showtime->id) }}"
-                                                            class="showtime-link">
-                                                            {{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i') }}
-                                                            <br>
-                                                            <small>{{ $showtime->cinemaRoom->name ?? 'Phòng?' }}</small>
-                                                        </a>
-                                                    @endforeach
-                                                </div>
-                                            @endif
+                                        <div class="theater-showtimes-body p-3">
+                                            <div class="d-flex flex-wrap gap-3">
+                                                @foreach ($showtimesGroup as $showtime)
+                                                    <a href="{{ route('client.order.create', $showtime->id) }}"
+                                                        class="btn btn-outline-danger btn-sm px-4">
+                                                        {{ \Carbon\Carbon::parse($showtime->start_time)->format('H:i') }}
+                                                        <br>
+                                                        <small class="text-dark">{{ $showtime->cinemaRoom->name }}</small>
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
+
+                            @empty
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <p class="fs-5">Không có suất chiếu nào trong ngày này</p>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </form>

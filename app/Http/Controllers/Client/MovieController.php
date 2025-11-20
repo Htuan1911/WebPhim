@@ -48,27 +48,46 @@ class MovieController extends Controller
 
     public function show($id, Request $request)
     {
-        $movie = Movie::with(['showtimes.cinemaRoom.theater'])->findOrFail($id);
-        $theaters = Theater::all();
-        $selectedDate = $request->query('date', now()->format('Y-m-d'));
-        $selectedTheaterId = $request->query('theater_id', 'all');
+        // Load phim + quan hệ cần thiết
+        $movie = Movie::with([
+            'showtimes.cinemaRoom.theater.cinemaCategory' // ← quan trọng!
+        ])->findOrFail($id);
 
+        // Lấy tham số lọc
+        $selectedDate = $request->query('date', now()->format('Y-m-d'));
+        $selectedCategoryId = $request->query('category_id', 'all'); // ← mới thêm
+
+        // Query suất chiếu theo ngày + hãng rạp
         $showtimes = $movie->showtimes()
+            ->with(['cinemaRoom.theater.cinemaCategory'])
             ->whereDate('start_time', $selectedDate)
-            ->when($selectedTheaterId !== 'all', function ($query) use ($selectedTheaterId) {
-                $query->whereHas('cinemaRoom', function ($q) use ($selectedTheaterId) {
-                    $q->where('theater_id', $selectedTheaterId);
+            ->when($selectedCategoryId !== 'all', function ($q) use ($selectedCategoryId) {
+                $q->whereHas('cinemaRoom.theater', function ($sq) use ($selectedCategoryId) {
+                    $sq->where('cinema_category_id', $selectedCategoryId);
                 });
             })
+            ->orderBy('start_time')
             ->get();
 
+        // Nhóm theo rạp để hiển thị đẹp
+        $groupedShowtimes = $showtimes->groupBy('cinemaRoom.theater_id');
+
+        // Danh sách rạp (theo hãng nếu có lọc)
+        $theatersQuery = Theater::with('cinemaCategory');
+        if ($selectedCategoryId !== 'all') {
+            $theatersQuery->where('cinema_category_id', $selectedCategoryId);
+        }
+        $theaters = $theatersQuery->orderBy('name')->get();
+
+        // 9 ngày tới
         $weekDates = collect();
         for ($i = 0; $i < 9; $i++) {
             $weekDates->push(now()->addDays($i)->format('Y-m-d'));
         }
 
+        // Phim đang chiếu bên phải
         $nowShowingMovies = Movie::where('release_date', '<=', now())
-            ->orderByDesc('release_date')
+            ->inRandomOrder()
             ->take(12)
             ->get();
 
@@ -76,8 +95,8 @@ class MovieController extends Controller
             'movie',
             'theaters',
             'selectedDate',
-            'selectedTheaterId',
-            'showtimes',
+            'selectedCategoryId',     // ← gửi qua view
+            'groupedShowtimes',       // ← dùng để hiển thị
             'weekDates',
             'nowShowingMovies'
         ));

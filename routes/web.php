@@ -2,6 +2,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CinemaCategoryController;
 use App\Http\Controllers\CinemaRoomController;
 use App\Http\Controllers\TheaterController;
 use App\Http\Controllers\ComboController;
@@ -109,6 +110,16 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/',                     [ReviewController::class, 'index'])->name('index');
         Route::delete('/{id}/destroy',      [ReviewController::class, 'destroy'])->name('destroy');
+    });
+
+    // Thêm vào trong group admin
+    Route::prefix('cinema-categories')->name('cinema-categories.')->group(function () {
+        Route::get('/',                     [CinemaCategoryController::class, 'index'])->name('index');
+        Route::get('/create',               [CinemaCategoryController::class, 'create'])->name('create');
+        Route::post('/store',               [CinemaCategoryController::class, 'store'])->name('store');
+        Route::get('/{id}/edit',            [CinemaCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update',          [CinemaCategoryController::class, 'update'])->name('update');
+        Route::delete('/{id}/destroy',      [CinemaCategoryController::class, 'destroy'])->name('destroy');
     });
 });
 

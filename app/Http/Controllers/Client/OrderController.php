@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderSeat;
 use App\Models\Payment;
 use App\Models\Seat;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Showtime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

@@ -9,8 +9,8 @@ document.querySelectorAll('.scroll-btn').forEach(button => {
             console.log('No cards found in row:', targetId);
             return;
         }
-        const cardWidth = card.offsetWidth + 16; // Include gap
-        const scrollAmount = cardWidth * 5; // Scroll by 5 cards
+        const cardWidth = card.offsetWidth + 16;
+        const scrollAmount = cardWidth * 5; 
         const isNext = button.classList.contains('next');
 
         console.log('Scrolling', isNext ? 'next' : 'prev', 'by', scrollAmount);
@@ -50,4 +50,18 @@ document.querySelectorAll('.movie-row').forEach(row => {
     };
     row.addEventListener('scroll', updateButtonStates);
     updateButtonStates();
+});
+
+document.querySelectorAll('.scroll-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const target = this.getAttribute('data-target');
+        const row = document.getElementById(target);
+        const scrollAmount = 340;
+
+        if (this.classList.contains('next')) {
+            row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        } else {
+            row.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+    });
 });

@@ -1,50 +1,113 @@
 @extends('layouts.admin')
 
-@section('content')
-    <h1>Danh sách rạp</h1>
-    <a href="{{ route('admin.theaters.create') }}" class="btn btn-primary mb-3">Thêm rạp</a>
+@section('title', 'Quản lý Rạp Chiếu Phim')
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-gray-800">Danh sách Rạp chiếu phim</h1>
+        <a href="{{ route('admin.theaters.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Thêm rạp mới
+        </a>
+    </div>
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     @endif
 
-    <table class="table table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Danh mục</th>
-                <th>Ảnh</th>
-                <th>Tên rạp</th>
-                <th>Số ghế</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($theaters as $theater)
-                <tr>
-                    <td>{{ $theater->id }}</td>
-                    <td>{{ $theater->category }}</td>
-                    <td style="width: 100px;">
-                        @if($theater->image)
-                            <img src="{{ asset('storage/' . $theater->image) }}" alt="{{ $theater->name }}" class="img-fluid rounded" style="max-height: 80px;">
-                        @else
-                            <span class="text-muted">Chưa có ảnh</span>
-                        @endif
-                    </td>
-                    <td>{{ $theater->name }}</td>
-                    <td>{{ $theater->total_seats }}</td>
-                    <td>
-                        <a href="{{ route('admin.theaters.edit', $theater->id) }}" class="btn btn-warning btn-sm">Sửa</a>
-                        <form action="{{ route('admin.theaters.destroy', $theater->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-danger btn-sm" onclick="return confirm('Bạn chắc chắn muốn xóa?')">Xóa</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-    {{ $theaters->links() }}
+    <div class="card shadow border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="60">#</th>
+                            <th>Hãng rạp</th>
+                            <th>Ảnh rạp</th>
+                            <th>Tên rạp</th>
+                            <th>Số ghế</th>
+                            <th width="150">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($theaters as $theater)
+                            <tr>
+                                <td class="text-center fw-bold">
+                                    {{ $loop->iteration + ($theaters->currentPage() - 1) * $theaters->perPage() }}</td>
+                                <td>
+                                    @if ($theater->cinemaCategory)
+                                        <div class="d-flex align-items-center">
+                                            {{ $theater->cinemaCategory->name }}
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Chưa chọn hãng</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($theater->image)
+                                        <img src="{{ asset('storage/' . $theater->image) }}" alt="{{ $theater->name }}"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-light border rounded d-flex align-items-center justify-content-center"
+                                            style="width: 100px; height: 70px;">
+                                            <i class="fas fa-image text-muted fa-2x"></i>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $theater->name }}
+                                    @if ($theater->address)
+                                        <br><small class="text-muted">{{ Str::limit($theater->address, 50) }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $theater->total_seats }} ghế
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.theaters.edit', $theater) }}"
+                                            class="btn btn-warning btn-sm" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.theaters.destroy', $theater) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Xóa rạp này? Tất cả phòng chiếu và suất chiếu sẽ bị ảnh hưởng!')"
+                                                title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-theater-masks fa-3x mb-3"></i>
+                                    <p>Chưa có rạp chiếu phim nào</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                {{ $theaters->links() }}
+            </div>
+        </div>
+    </div>
 @endsection

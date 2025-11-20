@@ -76,14 +76,6 @@ body {
     color: #e91e63;
 }
 
-footer {
-    background: #ffe4ec;
-    padding: 20px 0;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #555;
-}
-
 .btn-primary {
     background-color: #e91e63;
     border-color: #e91e63;
@@ -100,4 +92,43 @@ footer {
 
 .swiper-slide {
     width: 200px;
+}
+
+
+.footer-link {
+    color: #555 !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.footer-link:hover {
+    color: #e11d48 !important;
+}
+
+.footer-link:hover::before {
+    color: #e11d48;
+    font-weight: bold;
+}
+
+/* Icon mạng xã hội */
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 2px solid #e11d48;
+    color: #e11d48;
+    border-radius: 50%;
+    font-size: 16px;
+    transition: all 0.4s ease;
+}
+
+.social-icon:hover {
+    background: #e11d48;
+    color: white !important;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(225, 29, 72, 0.3);
 }
