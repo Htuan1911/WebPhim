@@ -9,6 +9,7 @@
     {{-- Bootstrap + Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     {{-- SwiperJS (slider) --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
@@ -92,8 +93,7 @@
                     <ul class="list-unstyled footer-links">
                         <li class="mb-2"><a href="{{ route('client.movies.index') }}" class="footer-link">Phim đang
                                 chiếu</a></li>
-                        <li class="mb-2"><a href="#"
-                                class="footer-link">Phim sắp chiếu</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link">Phim sắp chiếu</a></li>
                         <li class="mb-2"><a href="{{ route('client.theaters.index') }}" class="footer-link">Rạp chiếu
                                 phim</a></li>
                         <li class="mb-2"><a href="#" class="footer-link">Ưu đãi & Khuyến mãi</a></li>

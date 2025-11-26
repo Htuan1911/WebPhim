@@ -110,7 +110,7 @@
                             <article
                                 class="post-grid-card h-100 shadow-lg rounded-3 overflow-hidden bg-dark text-white border-0 
                                         transition-all hover-lift">
-                                <a href="#"
+                                <a href="{{ route('client.posts.show', $post) }}"
                                     class="text-decoration-none text-white">
                                     <div class="position-relative overflow-hidden">
                                         @if ($post->image)

@@ -17,6 +17,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\TheaterController as ClientTheaterController;
 use App\Http\Controllers\Client\MovieController as ClientMovieController;
 use App\Http\Controllers\ReviewController as ClientReviewController;
+use App\Http\Controllers\Client\PostController as ClientPostController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -152,4 +153,7 @@ Route::prefix('client')->name('client.')->group(function () {
     // Trang xem tất cả đánh giá của 1 phim
     Route::get('/movies/{movie}/reviews', [\App\Http\Controllers\Client\ReviewController::class, 'list'])
         ->name('reviews.list');;
+
+    Route::get('/tin-tuc/{post:slug}', [ClientPostController::class, 'show'])
+        ->name('posts.show');
 });

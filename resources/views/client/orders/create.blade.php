@@ -241,7 +241,7 @@
                         <div id="selected-combos-inputs"></div>
 
                         <button type="submit" class="btn btn-danger btn-lg px-5 fw-bold">
-                            Đặt vé ngay
+                            Đặt vé ngay 
                         </button>
                     </form>
                 </div>
