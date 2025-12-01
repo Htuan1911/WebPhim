@@ -39,5 +39,5 @@
         </tbody>
     </table>
 
-    {{ $seats->links() }}
+    {{ $seats->links('pagination::bootstrap-5') }}
 @endsection

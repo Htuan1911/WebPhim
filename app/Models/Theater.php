@@ -13,13 +13,12 @@ class Theater extends Model
         'image',
     ];
 
-    // app/Models/Theater.php – ĐOẠN HOÀN CHỈNH
     public function cinemaCategory()
     {
         return $this->belongsTo(CinemaCategory::class, 'cinema_category_id');
     }
 
-    public function cinemaRooms()   // ← DÒNG QUAN TRỌNG NHẤT!!!
+    public function cinemaRooms()
     {
         return $this->hasMany(CinemaRoom::class);
     }

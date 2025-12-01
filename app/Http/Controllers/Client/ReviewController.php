@@ -12,26 +12,20 @@ class ReviewController extends Controller
 {
     public function store(Request $request, Order $order)
     {
-        // LỖI 1: Bạn dùng $order->movie nhưng model Order không có relation movie
-        // → Phải lấy qua showtime
         $movie = $order->showtime?->movie;
 
         if (!$movie) {
             return back()->with('error', 'Không tìm thấy phim.');
         }
 
-        // Kiểm tra quyền
         if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // Kiểm tra đã xem phim chưa
         if ($order->showtime->start_time > now()) {
             return back()->with('error', 'Chỉ được đánh giá sau khi xem phim.');
         }
 
-        // LỖI 2: Kiểm tra đã đánh giá chưa – bạn dùng order_id → sai logic
-        // → Phải kiểm tra theo user + movie (1 người chỉ được đánh giá 1 phim 1 lần)
         $hasReviewed = Review::where('user_id', auth()->id())
             ->where('movie_id', $movie->id)
             ->exists();
@@ -41,7 +35,7 @@ class ReviewController extends Controller
         }
 
         $request->validate([
-            'rating'  => 'required|integer|min:1|max:10', // bạn đang dùng sao 1-10 đúng không?
+            'rating'  => 'required|integer|min:1|max:10',
             'comment' => 'nullable|string|max:1000',
         ]);
 

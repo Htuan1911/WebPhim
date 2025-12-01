@@ -16,13 +16,11 @@ class OrderSeat extends Model
         'seat_id',
     ];
 
-    // Quan hệ: ghế thuộc về 1 đơn hàng
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    // Quan hệ: ghế đặt là 1 ghế cụ thể
     public function seat()
     {
         return $this->belongsTo(Seat::class);

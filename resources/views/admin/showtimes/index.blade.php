@@ -43,5 +43,5 @@
         </tbody>
     </table>
 
-    {{ $showtimes->links() }}
+    {{ $showtimes->links('pagination::bootstrap-5') }}
 @endsection

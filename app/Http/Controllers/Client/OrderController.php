@@ -19,13 +19,8 @@ class OrderController extends Controller
     public function create($showtimeId)
     {
         $showtime = Showtime::with(['movie', 'cinemaRoom', 'cinemaRoom.theater'])->findOrFail($showtimeId);
-
-        // Lấy danh sách ghế theo cinema_room_id của suất chiếu
         $seats = $showtime->cinemaRoom->seats;
-
-        // Lấy danh sách ghế đã đặt
         $bookedSeatIds = OrderSeat::where('showtime_id', $showtime->id)->pluck('seat_id')->toArray();
-
         $combos = Combo::all();
 
         return view('client.orders.create', compact('showtime', 'seats', 'bookedSeatIds', 'combos'));
@@ -49,7 +44,6 @@ class OrderController extends Controller
 
     public function momo_payment(Request $request)
     {
-        // 1. Validate đầu vào
         $request->validate([
             'showtime_id' => 'required|exists:showtimes,id',
             'seats' => 'required|array|min:1',
@@ -57,21 +51,15 @@ class OrderController extends Controller
             'combos' => 'array',
             'combos.*.id' => 'exists:combos,id',
             'combos.*.quantity' => 'integer|min:0',
-            'summary-total' => 'required|numeric|min:0', // Dùng để hiển thị nhưng sẽ không tin tưởng
+            'summary-total' => 'required|numeric|min:0',
         ]);
 
         $userId = auth()->id();
         $showtimeId = $request->input('showtime_id');
         $seats = $request->input('seats');
-
-        // 2. Lấy suất chiếu để tính giá vé
         $showtime = Showtime::findOrFail($showtimeId);
         $ticketPrice = $showtime->ticket_price;
-
-        // 3. Tính tổng tiền vé
         $total = count($seats) * $ticketPrice;
-
-        // 4. Xử lý combo
         $comboData = [];
         foreach ($request->input('combos', []) as $combo) {
             if (isset($combo['id']) && isset($combo['quantity']) && $combo['quantity'] > 0) {
@@ -88,7 +76,6 @@ class OrderController extends Controller
             }
         }
 
-        // 5. Tạo đơn hàng
         $order = Order::create([
             'user_id' => $userId,
             'showtime_id' => $showtimeId,
@@ -98,7 +85,6 @@ class OrderController extends Controller
             'booking_code' => strtoupper(Str::random(10)),
         ]);
 
-        // 6. Lưu ghế
         foreach ($seats as $seatId) {
             OrderSeat::create([
                 'order_id' => $order->id,
@@ -107,7 +93,6 @@ class OrderController extends Controller
             ]);
         }
 
-        // 7. Lưu combo
         foreach ($comboData as $c) {
             ComboOrder::create([
                 'order_id' => $order->id,
@@ -117,7 +102,6 @@ class OrderController extends Controller
             ]);
         }
 
-        // 8. Tạo bản ghi thanh toán
         $payment = Payment::create([
             'order_id' => $order->id,
             'user_id' => $userId,
@@ -126,7 +110,6 @@ class OrderController extends Controller
             'status' => 'pending',
         ]);
 
-        // 9. Gọi API MoMo
         $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
         $partnerCode = 'MOMOBKUN20180529';
         $accessKey = 'klm05TvNBzhg7h7j';
@@ -142,7 +125,6 @@ class OrderController extends Controller
 
         $requestType = "payWithATM";
 
-        // 10. Tạo chữ ký
         $rawHash = "accessKey={$accessKey}&amount={$amountStr}&extraData={$extraData}&ipnUrl={$ipnUrl}&orderId={$orderIdMomo}&orderInfo={$orderInfo}&partnerCode={$partnerCode}&redirectUrl={$redirectUrl}&requestId={$requestId}&requestType={$requestType}";
         $signature = hash_hmac("sha256", $rawHash, $secretKey);
 
@@ -182,8 +164,6 @@ class OrderController extends Controller
     public function momo_ipn(Request $request)
     {
         $data = $request->all();
-
-        // Giải mã extraData để lấy payment_id
         $extraData = json_decode($data['extraData'] ?? '{}', true);
         $paymentId = $extraData['payment_id'] ?? null;
 
@@ -197,7 +177,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Đã xử lý hoặc không tồn tại'], 200);
         }
 
-        // Xác thực chữ ký MoMo gửi về (đảm bảo không giả mạo)
         $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
         $rawHash = "amount={$data['amount']}&extraData={$data['extraData']}&message={$data['message']}&orderId={$data['orderId']}&orderInfo={$data['orderInfo']}&orderType={$data['orderType']}&partnerCode={$data['partnerCode']}&payType={$data['payType']}&requestId={$data['requestId']}&responseTime={$data['responseTime']}&resultCode={$data['resultCode']}&transId={$data['transId']}";
         $signature = hash_hmac("sha256", $rawHash, $secretKey);
@@ -206,7 +185,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Sai chữ ký'], 400);
         }
 
-        // Nếu thanh toán thành công
         if ($data['resultCode'] == 0) {
             $payment->update([
                 'status' => 'paid',
@@ -214,7 +192,6 @@ class OrderController extends Controller
                 'paid_at' => now(),
             ]);
 
-            // Cập nhật đơn hàng
             $payment->order->update([
                 'payment_status' => 'paid',
             ]);
@@ -229,13 +206,11 @@ class OrderController extends Controller
     public function history()
     {
         if (auth()->check()) {
-            // Người đăng nhập: lấy theo user_id
             $orders = Order::with(['showtime.movie', 'orderSeats.seat'])
                 ->where('user_id', auth()->id())
                 ->latest()
                 ->paginate(10);
         } else {
-            // Khách vãng lai: lấy từ session
             $bookingCodes = session('guest_orders', []);
 
             $orders = Order::with(['showtime.movie', 'orderSeats.seat'])

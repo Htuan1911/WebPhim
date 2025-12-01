@@ -12,7 +12,7 @@
                         <img src="{{ asset('storage/' . $movie->poster) }}" class="movie-poster img-fluid"
                             alt="{{ $movie->title }}">
 
-                        <div class="play-trailer-btn" onclick="alert('Chức năng xem trailer đang phát triển')">
+                        <div class="play-trailer-btn" onclick="window.open('{{ $movie->trailer }}', '_blank')">
                             <!-- Icon play -->
                         </div>
                     </div>
@@ -93,12 +93,11 @@
 
                     {{-- Chọn danh mục rạp --}}
                     <div class="mb-3">
-                        <strong class="filter-label d-block mb-3 fs-5 text-primary">
+                        <strong class="filter-label">
                             Chọn hãng rạp:
                         </strong>
 
                         <div class="d-flex flex-wrap gap-3 justify-content-start">
-                            <!-- Nút "Tất cả" – màu hồng giống ảnh -->
                             <button type="button"
                                 class="categoryBtn cinema-brand-btn {{ !request('category_id') || request('category_id') === 'all' ? 'active' : '' }}"
                                 data-category-id="all">
@@ -133,7 +132,6 @@
                         </div>
                     </div>
 
-                    {{-- Danh sách rạp --}}
                     {{-- Danh sách rạp có suất chiếu --}}
                     <div class="mb-3">
                         <strong class="filter-label">Chọn rạp:</strong>
@@ -197,25 +195,16 @@
                     @foreach ($nowShowingMovies as $movie)
                         <a href="{{ route('client.movies.show', $movie->id) }}"
                             class="now-showing-item text-decoration-none text-dark d-block">
-
                             <div class="d-flex align-items-start gap-3 py-3">
-                                <!-- Poster -->
                                 <img src="{{ asset('storage/' . $movie->poster) }}" alt="{{ $movie->title }}"
                                     class="now-showing-poster rounded">
-
-                                <!-- Thông tin -->
                                 <div class="flex-grow-1">
-                                    <!-- Độ tuổi (đậm, nổi bật) -->
                                     <div class="age-rating">
                                         {{ $movie->age_rating ?? 'P' }}
                                     </div>
-
-                                    <!-- Tên phim -->
                                     <div class="movie-title">
                                         {{ $movie->title }}
                                     </div>
-
-                                    <!-- Thể loại -->
                                     <div class="movie-genre">
                                         {{ $movie->genre ?? 'Đang cập nhật' }}
                                     </div>
@@ -223,7 +212,6 @@
                             </div>
                         </a>
 
-                        <!-- Đường kẻ phân cách (trừ phim cuối) -->
                         @if (!$loop->last)
                             <hr class="list-divider">
                         @endif

@@ -72,5 +72,5 @@
         </tbody>
     </table>
 
-    {{ $movies->links() }}
+    {{ $movies->links('pagination::bootstrap-5') }}
 @endsection

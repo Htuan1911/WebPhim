@@ -68,7 +68,6 @@ class CinemaCategoryController extends Controller
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {
-            // Xóa ảnh cũ
             if ($category->image) {
                 Storage::disk('public')->delete($category->image);
             }
@@ -85,7 +84,6 @@ class CinemaCategoryController extends Controller
     {
         $category = CinemaCategory::findOrFail($id);
 
-        // Nếu có rạp đang dùng danh mục này → không cho xóa (hoặc có thể chuyển sang "Khác")
         if ($category->theaters()->exists()) {
             return back()->withErrors('Không thể xóa! Đang có rạp chiếu thuộc danh mục này.');
         }

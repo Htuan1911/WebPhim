@@ -33,5 +33,5 @@
     </tbody>
 </table>
 
-{{ $reviews->links() }}
+{{ $reviews->links('pagination::bootstrap-5') }}
 @endsection

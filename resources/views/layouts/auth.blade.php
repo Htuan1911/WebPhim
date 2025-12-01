@@ -77,11 +77,11 @@
             <h3 class="text-center mb-4">@yield('title')</h3>
 
             @if (session('success'))
-                <div class="alert alert-success text-white">{{ session('success') }}</div>
+                <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
             @if ($errors->any())
-                <div class="alert alert-danger text-white">
+                <div class="alert">
                     @foreach ($errors->all() as $error)
                         <div>{{ $error }}</div>
                     @endforeach

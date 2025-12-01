@@ -48,8 +48,8 @@
         </tbody>
     </table>
 
-    <div class="d-flex justify-content-center">
-        {{ $rooms->links() }}
+    <div class="mt-3">
+        {{ $rooms->links('pagination::bootstrap-5') }}
     </div>
 </div>
 @endsection

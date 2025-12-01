@@ -10,14 +10,12 @@ use Illuminate\Http\Request;
 
 class ShowtimeController extends Controller
 {
-    // Hiển thị danh sách showtimes
     public function index()
     {
         $showtimes = Showtime::with(['movie', 'theater', 'cinemaRoom'])->paginate(10);
         return view('admin.showtimes.index', compact('showtimes'));
     }
 
-    // Form tạo mới showtime
     public function create()
     {
         $movies = Movie::all();
@@ -27,7 +25,6 @@ class ShowtimeController extends Controller
         return view('admin.showtimes.create', compact('movies', 'theaters', 'cinemaRooms'));
     }
 
-    // Lưu showtime mới
     public function store(Request $request)
     {
         $request->validate([
@@ -43,7 +40,6 @@ class ShowtimeController extends Controller
         return redirect()->route('admin.showtimes.index')->with('success', 'Thêm lịch chiếu thành công!');
     }
 
-    // Form sửa showtime
     public function edit($id)
     {
         $showtime = Showtime::findOrFail($id);
@@ -54,7 +50,6 @@ class ShowtimeController extends Controller
         return view('admin.showtimes.edit', compact('showtime', 'movies', 'theaters', 'cinemaRooms'));
     }
 
-    // Cập nhật showtime
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -71,7 +66,6 @@ class ShowtimeController extends Controller
         return redirect()->route('admin.showtimes.index')->with('success', 'Cập nhật lịch chiếu thành công!');
     }
 
-    // Xóa showtime
     public function destroy($id)
     {
         $showtime = Showtime::findOrFail($id);

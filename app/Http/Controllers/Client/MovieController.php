@@ -48,16 +48,12 @@ class MovieController extends Controller
 
     public function show($id, Request $request)
     {
-        // Load phim + quan hệ cần thiết
         $movie = Movie::with([
-            'showtimes.cinemaRoom.theater.cinemaCategory' // ← quan trọng!
+            'showtimes.cinemaRoom.theater.cinemaCategory' 
         ])->findOrFail($id);
 
-        // Lấy tham số lọc
         $selectedDate = $request->query('date', now()->format('Y-m-d'));
-        $selectedCategoryId = $request->query('category_id', 'all'); // ← mới thêm
-
-        // Query suất chiếu theo ngày + hãng rạp
+        $selectedCategoryId = $request->query('category_id', 'all'); 
         $showtimes = $movie->showtimes()
             ->with(['cinemaRoom.theater.cinemaCategory'])
             ->whereDate('start_time', $selectedDate)
@@ -69,23 +65,19 @@ class MovieController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        // Nhóm theo rạp để hiển thị đẹp
         $groupedShowtimes = $showtimes->groupBy('cinemaRoom.theater_id');
 
-        // Danh sách rạp (theo hãng nếu có lọc)
         $theatersQuery = Theater::with('cinemaCategory');
         if ($selectedCategoryId !== 'all') {
             $theatersQuery->where('cinema_category_id', $selectedCategoryId);
         }
         $theaters = $theatersQuery->orderBy('name')->get();
 
-        // 9 ngày tới
         $weekDates = collect();
         for ($i = 0; $i < 9; $i++) {
             $weekDates->push(now()->addDays($i)->format('Y-m-d'));
         }
 
-        // Phim đang chiếu bên phải
         $nowShowingMovies = Movie::where('release_date', '<=', now())
             ->inRandomOrder()
             ->take(12)
@@ -95,8 +87,8 @@ class MovieController extends Controller
             'movie',
             'theaters',
             'selectedDate',
-            'selectedCategoryId',     // ← gửi qua view
-            'groupedShowtimes',       // ← dùng để hiển thị
+            'selectedCategoryId',     
+            'groupedShowtimes',     
             'weekDates',
             'nowShowingMovies'
         ));

@@ -3,38 +3,108 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    <h1>Bảng điều khiển</h1>
-    <p>Chào mừng bạn đến với hệ thống quản trị Laravel.</p>
+    <h1 class="mb-4">Bảng điều khiển</h1>
 
     <div class="row">
-        <div class="col-md-4">
-            <div class="card text-bg-primary mb-3">
-                <div class="card-header">Sản phẩm</div>
+        <!-- Bar Chart -->
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-center fw-bold">Biểu đồ số lượng</div>
                 <div class="card-body">
-                    <h5 class="card-title">150 sản phẩm</h5>
-                    <p class="card-text">Quản lý các sản phẩm trong hệ thống.</p>
+                    <canvas id="barChart" height="300"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-bg-success mb-3">
-                <div class="card-header">Người dùng</div>
+        <!-- Pie Chart -->
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-center fw-bold">Tỷ lệ dữ liệu</div>
                 <div class="card-body">
-                    <h5 class="card-title">300 người dùng</h5>
-                    <p class="card-text">Quản lý thông tin người dùng.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-bg-warning mb-3">
-                <div class="card-header">Đơn hàng</div>
-                <div class="card-body">
-                    <h5 class="card-title">25 đơn hàng</h5>
-                    <p class="card-text">Theo dõi và quản lý đơn hàng.</p>
+                    <canvas id="pieChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+@endsection
+
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const chartData = JSON.parse('{!! json_encode($chartData) !!}');
+
+        // =============================== 1. BAR CHART ===============================
+        new Chart(document.getElementById("barChart"), {
+            type: 'bar',
+            data: {
+                labels: ["Phim", "Người dùng", "Đơn hàng", "Rạp", "Combo"],
+                datasets: [{
+                    label: "Số lượng",
+                    data: [
+                        chartData.movies,
+                        chartData.users,
+                        chartData.orders,
+                        chartData.theaters,
+                        chartData.combos
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // =============================== 2. PIE CHART ===============================
+        new Chart(document.getElementById("pieChart"), {
+            type: 'pie',
+            data: {
+                labels: ["Phim", "Người dùng", "Đơn hàng", "Rạp", "Combo"],
+                datasets: [{
+                    data: [
+                        chartData.movies,
+                        chartData.users,
+                        chartData.orders,
+                        chartData.theaters,
+                        chartData.combos
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        });
+    </script>
 @endsection

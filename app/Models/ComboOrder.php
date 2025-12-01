@@ -18,13 +18,11 @@ class ComboOrder extends Model
         'subtotal',
     ];
 
-    // Mối quan hệ: mỗi combo_order thuộc về một đơn hàng
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    // Mối quan hệ: mỗi combo_order thuộc về một combo
     public function combo()
     {
         return $this->belongsTo(Combo::class);

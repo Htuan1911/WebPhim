@@ -9,20 +9,17 @@ use Illuminate\Support\Facades\Storage as FacadesStorage;
 
 class ComboController extends Controller
 {
-    // Hiển thị danh sách combo
     public function index()
     {
         $combos = Combo::orderBy('id', 'asc')->paginate(10);
         return view('admin.combos.index', compact('combos'));
     }
 
-    // Form tạo combo mới
     public function create()
     {
         return view('admin.combos.create');
     }
 
-    // Lưu combo mới
     public function store(Request $request)
     {
         $request->validate([
@@ -43,14 +40,12 @@ class ComboController extends Controller
         return redirect()->route('admin.combos.index')->with('success', 'Thêm combo thành công!');
     }
 
-    // Form sửa combo
     public function edit($id)
     {
         $combo = Combo::findOrFail($id);
         return view('admin.combos.edit', compact('combo'));
     }
 
-    // Cập nhật combo
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -76,7 +71,6 @@ class ComboController extends Controller
         return redirect()->route('admin.combos.index')->with('success', 'Cập nhật combo thành công!');
     }
 
-    // Xóa combo
     public function destroy($id)
     {
         $combo = Combo::findOrFail($id);

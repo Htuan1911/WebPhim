@@ -49,6 +49,6 @@ class User extends Authenticatable
 
     public function reviews()
     {
-        return $this->hasMany(Review::class); // giả sử bảng reviews có cột user_id
+        return $this->hasMany(Review::class);
     }
 }
